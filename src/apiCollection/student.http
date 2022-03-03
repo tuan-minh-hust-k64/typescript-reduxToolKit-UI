@@ -1,0 +1,21 @@
+@baseUrl = http://js-post-api.herokuapp.com/api
+
+# @name getAllStudent
+
+GET {{baseUrl}}/students?_page=1&_limit=10
+###
+# @name getStudentById
+
+GET {{baseUrl}}/students/sktwi1cgkkuif36fd
+###
+
+# @name addNewStudent
+POST {{baseUrl}}/students
+Content-Type: application/json
+{
+    "name": "tuan minh",
+    "age": "19",
+    "marks": "9",
+    "gender": "male",
+    "city": "pt"    
+}
