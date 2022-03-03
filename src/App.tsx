@@ -5,9 +5,13 @@ import { DashBoard } from 'features/dashboard';
 import { Student } from 'features/student';
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
+import socket from 'socket';
 import './App.css';
 
 function App() {
+  React.useEffect(() => {
+    socket.emit('hello')
+  }, [])
   return (
     <Routes>
       <Route path="/login"  element={<LoginPage />} />

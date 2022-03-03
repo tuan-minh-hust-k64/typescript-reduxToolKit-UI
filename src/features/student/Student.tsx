@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
   Grid,
@@ -20,6 +21,8 @@ import {
 import studentAPI from 'api/studentAPI';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import * as React from 'react';
+import socket from 'socket';
+import { showSuccessToast } from 'util/displayToastMess';
 import { selectAllStudent, studentAction } from './studentSlice';
 
 const style = {
@@ -43,11 +46,26 @@ export function Student() {
   const [gender, setGender] = React.useState('');
   const [mark, setMark] = React.useState('');
   const [city, setCity] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect((): VoidFunction=> {
+    socket.on('addStudent', (success) => {
+      showSuccessToast({
+        message: 'Add new student success',
+        time: 1000,
+        title: 'Success',
+        type:'success',
+      })
+    });
+    return () => socket.disconnect();
+  }, []);
+
   const handleClose = () => {
     setOpen(false);
   };
   const handleOpen = () => {
     setOpen(true);
+
   };
   const handleDelete = async (id: string) => {
     const { success } = await studentAPI.removeStudent(id);
@@ -59,6 +77,8 @@ export function Student() {
   };
 
   const handleSubmit = async () => {
+    setOpen(false);
+    setLoading(true);
     const newStudent = await studentAPI.addStudent({
       name: name,
       age: parseInt(age, 10),
@@ -66,8 +86,14 @@ export function Student() {
       mark: parseInt(mark, 10),
       city,
     });
+        showSuccessToast({
+      message: 'Server is running',
+      time: 1000,
+      title: 'Running',
+      type:'success',
+    })
+    socket.emit('addStudents');
     dispatch(studentAction.addStudent(newStudent));
-    setOpen(false);
   };
   return (
     <div>
@@ -84,7 +110,7 @@ export function Student() {
               Class Transcript
             </Typography>
             <Button color="primary" sx={{ float: 'right' }} onClick={handleOpen}>
-              Add New
+              {loading?<CircularProgress color="success" size = {20} />: 'Add new'}
             </Button>
             <Box>
               <TableContainer component={Paper}>
@@ -113,9 +139,13 @@ export function Student() {
                         <TableCell align="right">{student.mark}</TableCell>
                         <TableCell align="right">{student.city}</TableCell>
                         <TableCell align="right">
-                          <Button color="error" onClick={() => 
-                            //@ts-ignore
-                            handleDelete(student._id)}>
+                          <Button
+                            color="error"
+                            onClick={() =>
+                              //@ts-ignore
+                              handleDelete(student._id)
+                            }
+                          >
                             Delete
                           </Button>
                         </TableCell>
