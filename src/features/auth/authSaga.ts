@@ -10,10 +10,11 @@ import { actionAuth, AuthPayload } from './authSlice';
 
 function* login(payload: AuthPayload) {
   try {
-    yield call(userAPI.login, payload);
+    const user = yield call(userAPI.login, payload);
     yield put(
       actionAuth.loginSuccess({
         email: payload.email,
+        notifications: user.notifications,
         password: '',
       })
     );
@@ -46,9 +47,9 @@ function* initData() {
   yield put(dashboardAction.setRankingByCityList(rankStudentByCity));
 }
 
-function* watchFlowLogin(checkLogin: Boolean) {
+function* watchFlowLogin(checkLogin: Boolean, email: string, notifications: any) {
+  let isLoggedIn = checkLogin;
   while (true) {
-    let isLoggedIn = checkLogin;
     //@ts-ignore
     if (!isLoggedIn) {
       const action: PayloadAction<AuthPayload> = yield take(actionAuth.login.type);
@@ -56,31 +57,33 @@ function* watchFlowLogin(checkLogin: Boolean) {
     } else {
       yield put(
         actionAuth.loginSuccess({
-          email: '',
+          email: email,
+          notifications,
           password: '',
         })
       );
       yield call(initData);
       yield take(actionAuth.logOut.type);
       yield call(logout);
+      isLoggedIn = !isLoggedIn;
     }
   }
 }
 
 export default function* authSaga() {
   let checkLogin: Boolean = false;
+  let email: string;
+  let notifications: any;
   try {
     checkLogin = yield call(userAPI.checkLogin);
     //@ts-ignore
-    checkLogin = checkLogin.data.success;
-    yield put(
-      actionAuth.loginSuccess({
-        email: '',
-        password: '',
-      })
-    );
+    email = checkLogin.email;
+    //@ts-ignore
+    notifications = checkLogin.notifications;
+    //@ts-ignore
+    checkLogin = checkLogin.success;
   } catch (e: any) {
     yield put(actionAuth.logOut);
   }
-  yield fork(watchFlowLogin, checkLogin);
+  yield fork(watchFlowLogin, checkLogin, email, notifications);
 }

@@ -1,19 +1,34 @@
-import { Box, Button, CircularProgress, Paper, TextField, Typography } from '@mui/material';
+import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { IUser } from 'model';
 import * as React from 'react';
 import { Navigate } from 'react-router-dom';
-import { actionAuth, selectIsLoggedIn, selectLogging } from '../authSlice';
+import { socketLogin } from 'socket';
+import { showSuccessToast } from 'util/displayToastMess';
+import { actionAuth, AuthPayload, selectIsLoggedIn, selectLogging } from '../authSlice';
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
-  const [formData, setFormData] = React.useState<IUser>({
+  const [formData, setFormData] = React.useState<AuthPayload>({
     email: '',
     password: '',
   });
+  React.useEffect((): VoidFunction => {
+    socketLogin.on('loginResponse', (success) => {
+      showSuccessToast({
+        message: 'you are logged in',
+        time: 1000,
+        title: 'Success',
+        type:'success',
+      })
+    });
+    return () => socketLogin.disconnect()
+  }, [])
+
   const authSeletor = useAppSelector(selectIsLoggedIn);
   const isLogging = useAppSelector(selectLogging);
   const handleLogin = () => {
+    // socketLogin.emit('loginRequest');
     dispatch(actionAuth.login(formData));
   };
   const isAuthenticated = authSeletor ;

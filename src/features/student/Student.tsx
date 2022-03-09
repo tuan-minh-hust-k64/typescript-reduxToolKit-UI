@@ -21,7 +21,7 @@ import {
 import studentAPI from 'api/studentAPI';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import * as React from 'react';
-import socket from 'socket';
+import socket, { socketStudent } from 'socket';
 import { showSuccessToast } from 'util/displayToastMess';
 import { selectAllStudent, studentAction } from './studentSlice';
 
@@ -49,7 +49,7 @@ export function Student() {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect((): VoidFunction=> {
-    socket.on('addStudent', (success) => {
+    socketStudent.on('addStudentResponse', (success) => {
       showSuccessToast({
         message: 'Add new student success',
         time: 1000,
@@ -92,7 +92,7 @@ export function Student() {
       title: 'Running',
       type:'success',
     })
-    socket.emit('addStudents');
+    socketStudent.emit('addStudentRequest');
     dispatch(studentAction.addStudent(newStudent));
   };
   return (

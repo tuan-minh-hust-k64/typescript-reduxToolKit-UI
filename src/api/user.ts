@@ -1,8 +1,9 @@
+import { AuthPayload } from 'features/auth/authSlice';
 import { ICity, IUser } from 'model';
 import axiosClient from './axiosClient';
 
 const userAPI = {
-  login(payload: IUser): Promise<IUser | any> {
+  login(payload: AuthPayload): Promise<IUser | any> {
     const url = '/login';
     return axiosClient.post(url, payload,
       {
